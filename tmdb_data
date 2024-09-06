@@ -1,0 +1,56 @@
+import requests
+import pandas as pd
+import csv
+import os
+
+#API key
+api_key = "538ea096d8614cf383572f4f81bc2d5f"
+
+#URL endpoint for the API request 
+url = "https://api.themoviedb.org/3/search/movie"
+
+#Headers
+headers = {
+    "Authorization": f"Bearer {api_key}",
+    "Content-Type": "application/json;charset=utf-8",
+}
+
+
+
+def get_reviews(movie_id):
+    url = 'https://api.themoviedb.org/3/movie/{movie_id}/reviews'
+    response = requests.get(url, headers=headers)
+    if response.status_code != 200:
+        print('1',f"Error: {response.status_code}")
+        return
+    review_id = response.json()['results']['id']
+    content = response.json()['results']['content']
+    url = 'https://api.themoviedb.org/3/review/{review_id}'
+    response = requests.get(url, headers=headers)
+    if response.status_code != 200:
+        print('2', f"Error: {response.status_code}")
+        return
+    username = response.json()['author_details']['username']
+    rating = response.json()['author_details']['rating']
+    
+    data = {'user' : username, 'movie_id' : movie_id, 'review' : content, 'rating' : rating}
+    csv_file = 'user_ratings.csv'
+    file_exists = os.path.isfile(csv_file)
+    with open(csv_file, mode='w', newline='', encoding='utf-8') as file:
+        writer = csv.DictWriter(file, fieldnames=['username', 'movie_id', 'review', 'rating'])
+        if not file_exists:
+            writer.writeheader()
+        writer.writerows(data)  
+
+
+
+
+
+
+
+
+
+
+
+
+
